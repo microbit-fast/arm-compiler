@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload souborů</title>
+    <style>
+        .file-input-container {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Nahrát soubory</h2>
+    <form id="upload-form">
+        <div id="file-inputs">
+            <div class="file-input-container">
+                <input type="file" name="files" required>
+                <button type="button" onclick="removeFileInput(this)">Odstranit</button>
+            </div>
+        </div>
+        <button type="button" onclick="addFileInput()">Přidat soubor</button>
+        <br><br>
+        <button type="submit">Sestavit</button>
+    </form>
+
+    <script>
+        function addFileInput() {
+            const container = document.getElementById('file-inputs');
+            const newInput = document.createElement('div');
+            newInput.classList.add('file-input-container');
+            newInput.innerHTML = `
+                <input type="file" name="files" required>
+                <button type="button" onclick="removeFileInput(this)">Odstranit</button>
+            `;
+            container.appendChild(newInput);
+        }
+
+        function removeFileInput(button) {
+            const inputContainer = button.parentElement;
+            inputContainer.remove();
+        }
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/build', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'firmware.hex';
+                link.click();
+            })
+            .catch(error => {
+                console.error('Chyba při odesílání souborů:', error);
+            });
+        });
+    </script>
+</body>
+</html>
